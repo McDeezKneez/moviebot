@@ -9,6 +9,8 @@ public class MoviebotApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(MoviebotApplication.class, args);
+
+		
 	}
 
 }
