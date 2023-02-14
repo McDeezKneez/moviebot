@@ -24,7 +24,7 @@ public class SearchController {
 
     @GetMapping(value = "/search/{title}")
     @ResponseBody
-    public SearchData getInceptionSearch(@PathVariable String title) {
+    public SearchData getSearch(@PathVariable String title) {
 
         String uri = "https://imdb-api.com/en/API/SearchMovie/" + Token.imdbApiToken + "/" + title;
         RestTemplate restTemplate = new RestTemplate();
@@ -43,5 +43,6 @@ public class SearchController {
         System.out.println("/n");
         System.out.println(movieDetails.toString());
     }
+
 
 }
