@@ -1,5 +1,7 @@
 package com.discord.moviebot;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.client.RestTemplate;
 
 import com.discord.moviebot.models.Results;
@@ -12,6 +14,8 @@ import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
 
 public class MessageListener extends ListenerAdapter {
 
+    private static final Logger log = LoggerFactory.getLogger(MessageListener.class);
+    
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
 
@@ -19,7 +23,7 @@ public class MessageListener extends ListenerAdapter {
         String rawMessage = event.getMessage().getContentDisplay();
         if (rawMessage.startsWith("~")) {
 
-            System.out.println("Getting into the correct conditional");
+            log.debug("Getting into the correct conditional");
             // Drop the first character and any spaces
             String trimmed = rawMessage.substring(1).trim();
 
@@ -30,13 +34,13 @@ public class MessageListener extends ListenerAdapter {
                 // correctly
                 String title = trimmed.split(":")[1].trim();
 
-                System.out.println("Searching: " + title);
+                log.debug("Searching: " + title);
                 // We want to search for the movie and respond with the pictures and IDs
                 String uri = "https://imdb-api.com/en/API/SearchMovie/" + Token.imdbApiToken + "/" + title;
                 RestTemplate restTemplate = new RestTemplate();
                 SearchData searchResult = restTemplate.getForObject(uri, SearchData.class);
 
-                System.out.println("Search type: " + searchResult.searchType());
+                log.debug("Search type: " + searchResult.searchType());
                 if (searchResult != null) {
                     MessageChannel channel = event.getChannel();
                     for (int i = 0; i < 4; i++) {
@@ -45,7 +49,7 @@ public class MessageListener extends ListenerAdapter {
                             break;
                         }
                         Results curr = searchResult.results().get(i);
-                        System.out.println("Found: " + curr.image());
+                        log.debug("Found: " + curr.image());
                         channel.sendMessage(curr.image()).queue();
                     }
                 }
