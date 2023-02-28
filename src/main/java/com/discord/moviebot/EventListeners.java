@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.client.RestTemplate;
 
+import com.discord.moviebot.models.EmbedMessages;
 import com.discord.moviebot.models.Results;
 import com.discord.moviebot.models.SearchData;
 
@@ -43,8 +44,8 @@ public class EventListeners extends ListenerAdapter {
                         break;
                     }
                     Results curr = searchResult.results().get(i);
-                    log.debug("Found: " + curr.image());
-                    channel.sendMessage(curr.image()).queue();
+                    log.info("Found: " + curr.image());
+                    channel.sendMessageEmbeds(EmbedMessages.buildEmbedMessage(curr).build()).queue();;
                 }
             }
         }
