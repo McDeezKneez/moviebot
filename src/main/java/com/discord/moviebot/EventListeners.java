@@ -9,6 +9,7 @@ import com.discord.moviebot.models.Results;
 import com.discord.moviebot.models.SearchData;
 
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
@@ -47,6 +48,22 @@ public class EventListeners extends ListenerAdapter {
                     log.info("Found: " + curr.image());
                     channel.sendMessageEmbeds(EmbedMessages.buildEmbedMessage(curr).build()).queue();;
                 }
+            }
+        }
+    }
+
+    @Override
+    public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
+
+        if (event.getName().equals("mcmovies")) {
+
+            event.deferReply().queue();
+            if (event.getOption("type").getAsString().equals("Show")) {
+
+                event.getHook().sendMessage("Looking for a show with name: " + event.getOption("title").getAsString()).queue();
+            } else {
+
+                event.getHook().sendMessage("Looking for a movie with name: " + event.getOption("title").getAsString()).queue();
             }
         }
     }
