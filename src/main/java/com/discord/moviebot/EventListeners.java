@@ -13,7 +13,9 @@ import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
 public class EventListeners extends ListenerAdapter {
 
@@ -41,13 +43,15 @@ public class EventListeners extends ListenerAdapter {
             if (searchResult != null && searchResult.results() != null && searchResult.results().get(0) != null) {
 
                 MessageChannel channel = event.getChannel();
+                String titleId = searchResult.results().get(0).id();
 
-                log.info("Searching for id: " + searchResult.results().get(0).id());
+                log.info("Searching for id: " + titleId);
                 String titleUri = "https://imdb-api.com/en/API/Title/" + Token.imdbApiToken + "/"
-                        + searchResult.results().get(0).id() + "/Ratings";
+                        + titleId + "/Ratings";
                 TitleData titleData = restTemplate.getForObject(titleUri, TitleData.class);
 
-                channel.sendMessageEmbeds(EmbedMessages.buildEmbedTitleMessage(titleData).build()).queue();
+                channel.sendMessageEmbeds(EmbedMessages.buildEmbedTitleMessage(titleData).build())
+                        .addActionRow(Button.link("https://www.imdb.com/title/" + titleId, "IMDb page")).queue();
             }
         }
     }
@@ -63,7 +67,7 @@ public class EventListeners extends ListenerAdapter {
 
             if (event.getOption("type").getAsString().equals("Show")) {
 
-                event.getHook().sendMessage("Looking for a show with name: " + trimmed)
+                event.getHook().sendMessage("Looking for shows with name: " + trimmed)
                         .queue();
                 // We want to search for the movie and respond with the pictures and IDs
                 String uri = "https://imdb-api.com/en/API/SearchSeries/" + Token.imdbApiToken + "/" + trimmed;
@@ -83,13 +87,19 @@ public class EventListeners extends ListenerAdapter {
                         log.info("Found: " + curr.image());
                         channel.sendMessageEmbeds(EmbedMessages.buildEmbedSearchMessage(curr).build()).queue();
 
-                        // Put a button here that will kick off a review
+                        // put a button here that will review this movie
+                        MessageCreateData mcb = new MessageCreateBuilder()
+                                .addActionRow(Button.primary(searchResult.results().get(i).id(),
+                                        "Review: " + searchResult.results().get(i).title() + ": "
+                                                + searchResult.results().get(i).description()))
+                                .build();
+                        channel.sendMessage(mcb).queue();
 
                     }
                 }
-            } else {
+            } else if (event.getOption("type").getAsString().equals("Movie")) {
 
-                event.getHook().sendMessage("Looking for a movie with name: " + trimmed)
+                event.getHook().sendMessage("Looking for movies with name: " + trimmed)
                         .queue();
 
                 // We want to search for the movie and respond with the pictures and IDs
@@ -111,8 +121,21 @@ public class EventListeners extends ListenerAdapter {
                         channel.sendMessageEmbeds(EmbedMessages.buildEmbedSearchMessage(curr).build()).queue();
 
                         // put a button here that will review this movie
+                        MessageCreateData mcb = new MessageCreateBuilder()
+                                .addActionRow(Button.primary(searchResult.results().get(i).id(),
+                                        "Review: " + searchResult.results().get(i).title() + ": "
+                                                + searchResult.results().get(i).description()))
+                                .build();
+                        channel.sendMessage(mcb).queue();
+                        ;
+
                     }
                 }
+            } else {
+
+                // User didnt specify either show or movie, send error msg
+                event.getHook().sendMessage("Invalid input, please choose either show or movie.")
+                        .queue();
             }
         }
     }
